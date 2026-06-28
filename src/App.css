@@ -1,0 +1,35 @@
+  input,
+  select {
+    background: #f5f7fb !important;
+    outline: none;
+    font-size: 14px !important;
+    color: #344767;
+    border: 1px solid #ececec !important;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: #7367f0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  input:focus-within,
+  select:focus-within {
+    border-color: #7367f0;
+    background: #fff;
+  }
+
+  input::placeholder {
+    color: #4d4e4f !important;
+  }
+
+  button {
+    font-size: 14px !important;
+  }
+
+  label.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+  }
