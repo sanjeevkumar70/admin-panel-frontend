@@ -10,8 +10,6 @@
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow: 0 4px 8px 0 rgba(114, 114, 114, 0.048), 0 6px 20px 0 rgba(0, 0, 0, 0.037);
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
 h1,
