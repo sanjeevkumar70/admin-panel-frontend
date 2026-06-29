@@ -12,11 +12,9 @@ import "primereact/resources/themes/lara-light-cyan/theme.css";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
     <PrimeReactProvider value={{ unstyled: false }}>
       <AuthProvider>
         <App />
       </AuthProvider>
     </PrimeReactProvider>
-  </React.StrictMode>
 );

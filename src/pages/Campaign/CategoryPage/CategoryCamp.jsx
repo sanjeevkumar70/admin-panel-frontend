@@ -1,6 +1,8 @@
-import { useState } from "react";
-import DataTable from "react-data-table-component";
+
 import { Edit, Trash2 } from "react-feather";
+import { useDropzone } from "react-dropzone";
+import { useCallback, useState } from "react";
+import DataTable from "react-data-table-component";
 import { Button, Badge, Input, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Row, Col } from "reactstrap";
 
 
@@ -34,6 +36,7 @@ export default function CategoryCamp() {
     },
   ]);
 
+
   const [modal, setModal] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -44,8 +47,48 @@ export default function CategoryCamp() {
     status: "Active",
     image: null,
   });
+  const [images, setImages] = useState([]);
 
-  const toggleModal = () => setModal(!modal);
+  const onDrop = useCallback((acceptedFiles) => {
+    const files = acceptedFiles.map((file) =>
+      Object.assign(file, {
+        preview: URL.createObjectURL(file),
+      })
+    );
+
+    setImages(files);
+
+    setFormData((prev) => ({
+      ...prev,
+      image: acceptedFiles[0],
+    }));
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    multiple: false,
+    accept: {
+      "image/*": [],
+    },
+  });
+
+
+  const toggleModal = () => {
+    setModal(!modal);
+
+    if (modal) {
+      setImages([]);
+
+      setFormData({
+        category: "",
+        name: "",
+        shortDesc: "",
+        description: "",
+        status: "Active",
+        image: null,
+      });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -229,12 +272,40 @@ export default function CategoryCamp() {
                 <FormGroup>
                   <Label>Category Photo</Label>
 
-                  <Input
-                    type="file"
-                    name="image"
-                    accept="image/*"
-                    onChange={handleChange}
-                  />
+                  <div
+                    {...getRootProps()}
+                    style={{
+                      border: "2px dashed #999",
+                      padding: 30,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    <p>Drag & Drop or Click</p>
+                    <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+                      {images.length > 0 && (
+                        <div style={
+                          { width: "100%", }}>
+                          {images.map((img) => (
+                            <img
+                              key={img.name}
+                              src={img.preview}
+                              alt={img.name}
+                              width={120}
+                              height={120}
+                              style={{
+                                objectFit: "cover",
+                                borderRadius: 8,
+                                width: "100%",
+                                border: "1px solid #ddd",
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                 </FormGroup>
               </Col>
 
@@ -249,10 +320,10 @@ export default function CategoryCamp() {
             </Button>
 
             <Button
-              color="primary"
+              className="btn-blue"
               type="submit"
             >
-             Add
+              Add
             </Button>
 
           </ModalFooter>

@@ -1,157 +1,134 @@
-import DataTable from "react-data-table-component";
+import { useState, useEffect } from "react";
 import { Edit, Trash2 } from "react-feather";
-import { Button, Badge, Input, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Row, Col } from "reactstrap";
+import DataTable from "react-data-table-component";
+import {
+  Button,
+  Badge,
+  Input,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Form,
+  FormGroup,
+  Label,
+  Row,
+  Col,
+} from "reactstrap";
 
-import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
 export default function CategoryBlog() {
   const [search, setSearch] = useState("");
-
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      name: "React Tutorial",
-      image: "https://picsum.photos/80?1",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Node.js Guide",
-      image: "https://picsum.photos/80?2",
-      status: "Inactive",
-    },
-    {
-      id: 3,
-      name: "JavaScript Basics",
-      image: "https://picsum.photos/80?3",
-      status: "Active",
-    },
-    {
-      id: 4,
-      name: "CSS Tricks",
-      image: "https://picsum.photos/80?4",
-      status: "Active",
-    },
-  ]);
-
+  const [blogs, setBlogs] = useState([]);
   const [modal, setModal] = useState(false);
+  const [refresh, setRefresh] = useState(null);
+  const token = JSON.parse(localStorage.getItem("user")).token;
 
   const [formData, setFormData] = useState({
-    category: "",
+    id: null,
     name: "",
-    shortDesc: "",
-    description: "",
-    status: "Active",
-    image: null,
-  });
-  const [images, setImages] = useState([]);
-
-  // const onDrop = useCallback((acceptedFiles) => {
-  //   const files = acceptedFiles.map((file) =>
-  //     Object.assign(file, {
-  //       preview: URL.createObjectURL(file),
-  //     })
-  //   );
-
-  //   setImages(files);
-  // }, []);
-  // const { getRootProps, getInputProps } = useDropzone({
-  //   accept: {
-  //     "image/*": [],
-  //   },
-  // });
-  const onDrop = useCallback((acceptedFiles) => {
-    const files = acceptedFiles.map((file) =>
-      Object.assign(file, {
-        preview: URL.createObjectURL(file),
-      })
-    );
-
-    setImages(files);
-
-    setFormData((prev) => ({
-      ...prev,
-      image: acceptedFiles[0],
-    }));
-  }, []);
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    multiple: false,
-    accept: {
-      "image/*": [],
-    },
+    status: true,
   });
 
+  //Fetch categories (GET)
+  useEffect(() => {
+    fetch("http://localhost:5000/api/category-blog")
+      .then((res) => res.json())
+      .then((data) => setBlogs(data?.data))
+      .catch((err) => console.error(err));
+  }, [refresh]);
 
-  const toggleModal = () => {
-    setModal(!modal);
-
-    if (modal) {
-      setImages([]);
-
-      setFormData({
-        category: "",
-        name: "",
-        shortDesc: "",
-        description: "",
-        status: "Active",
-        image: null,
-      });
-    }
-  };
+  const toggleModal = () => setModal(!modal);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]:
+        name === "status"
+          ? value === "true"
+          : value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  //  Add or Update (POST / PUT)
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      if (formData.id) {
+        // Update (PUT)
+        await fetch(`http://localhost:5000/api/category-blog/${formData.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            status: formData.status,
+          }),
+        });
+      } else {
+        // Add (POST)
+        method: "POST",
+          await fetch("http://localhost:5000/api/category-blog", {
+            method: "POST", headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              name: formData.name,
+              status: formData.status,
+            }),
+          });
+      }
+      // Refresh list
+      setRefresh(Math.random() + new Date());
+      setFormData({
+        id: null,
+        name: "",
+        status: false
+      })
 
-    console.log(formData);
-
-    toggleModal();
-  };
-
-  const handleEdit = (row) => {
-    console.log("Edit:", row);
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Delete this blog?")) {
-      setBlogs((prev) => prev.filter((item) => item.id !== id));
+      toggleModal();
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const filteredBlogs = blogs.filter((blog) =>
-    blog.name.toLowerCase().includes(search.toLowerCase())
-  );
+  //  Edit
+  const handleEdit = (row) => {
+    setFormData({
+      id: row._id,
+      name: row.name,
+      status: row.status,
+      image: null,
+    });
+    setModal(true);
+  };
+
+  // Delete
+  const handleDelete = async (id) => {
+    if (window.confirm("Delete this blog?")) {
+      await fetch(`http://localhost:5000/api/category-blog/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` },
+        method: "DELETE",
+      });
+
+      setBlogs((prev) => prev.filter((item) => item.id !== id));
+      // Refresh list
+      setRefresh(Math.random() + new Date())
+    }
+  };
+
+  const filteredBlogs = Array.isArray(blogs)
+    ? blogs.filter((blog) =>
+      blog.name.toLowerCase().includes(search.toLowerCase())
+    )
+    : [];
+
 
   const columns = [
-    {
-      name: "Image",
-      width: "120px",
-      cell: (row) => (
-        <div className="image-wrapper">
-
-          <img
-            src={row.image}
-            alt={row.name}
-            style={{
-              width: "60px",
-              height: "60px",
-              borderRadius: "8px",
-              objectFit: "cover",
-            }}
-          />
-        </div>
-      ),
-    },
     {
       name: "Category Name",
       selector: (row) => row.name,
@@ -164,16 +141,27 @@ export default function CategoryBlog() {
       ),
     },
     {
+      name: "Slug",
+      selector: (row) => row.slug || row.name,
+      sortable: true,
+      grow: 2,
+      cell: (row) => (
+        <div>
+          <h6 className="mb-0 fw-bold">{row.slug || row.name}</h6>
+        </div>
+      ),
+    },
+    {
       name: "Status",
       selector: (row) => row.status,
       sortable: true,
       center: true,
       cell: (row) => (
         <Badge
-          color={row.status === "Active" ? "success" : "secondary"}
+          color={row.status ? "success" : "secondary"}
           pill
         >
-          {row.status}
+          {row.status ? "Active" : "Inactive"}
         </Badge>
       ),
     },
@@ -191,11 +179,10 @@ export default function CategoryBlog() {
           >
             <Edit size={15} />
           </Button>
-
           <Button
-            color="danger" m
+            color="danger"
             size="sm"
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row._id)}
           >
             <Trash2 size={15} />
           </Button>
@@ -214,10 +201,7 @@ export default function CategoryBlog() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Button
-            className="btn-blue"
-            onClick={toggleModal}
-          >
+          <Button className="btn-blue" onClick={toggleModal}>
             Add Category
           </Button>
         </div>
@@ -231,27 +215,16 @@ export default function CategoryBlog() {
           persistTableHead
         />
       </div>
-
-
-
-      <Modal
-        isOpen={modal}
-        toggle={toggleModal}
-        size="lg"
-        centered
-      >
+      <Modal isOpen={modal} toggle={toggleModal} size="lg" centered>
         <ModalHeader toggle={toggleModal}>
-          Add New Category
+          {formData.id ? "Edit Category" : "Add New Category"}
         </ModalHeader>
-
         <Form onSubmit={handleSubmit}>
           <ModalBody>
-
             <Row>
               <Col md="6">
                 <FormGroup>
                   <Label>Category Name</Label>
-
                   <Input
                     type="text"
                     name="name"
@@ -261,89 +234,32 @@ export default function CategoryBlog() {
                   />
                 </FormGroup>
               </Col>
-
               <Col md="6">
                 <FormGroup>
                   <Label>Status</Label>
-
                   <Input
                     type="select"
                     name="status"
-                    value={formData.status}
+                    value={String(formData.status)}
                     onChange={handleChange}
                   >
-                    <option>Active</option>
-                    <option>Inactive</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
                   </Input>
                 </FormGroup>
               </Col>
-
-
-              <Col md="12">
-                <FormGroup>
-                  <Label>Category Photo</Label>
-
-                  <div
-                    {...getRootProps()}
-                    style={{
-                      border: "2px dashed #999",
-                      padding: 30,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input {...getInputProps()} />
-                    <p>Drag & Drop or Click</p>
-                    <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                      {images.length > 0 && (
-                        <div style={
-                          { width: "100%", }}>
-                          {images.map((img) => (
-                            <img
-                              key={img.name}
-                              src={img.preview}
-                              alt={img.name}
-                              width={120}
-                              height={120}
-                              style={{
-                                objectFit: "cover",
-                                borderRadius: 8,
-                                width: "100%",
-                                border: "1px solid #ddd",
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                </FormGroup>
-              </Col>
-
             </Row>
           </ModalBody>
           <ModalFooter>
-            <Button
-              color="secondary"
-              onClick={toggleModal}
-            >
+            <Button color="secondary" onClick={toggleModal}>
               Cancel
             </Button>
-
-            <Button
-              className="btn-blue"
-              type="submit"
-            >
-              Add
+            <Button color="primary" type="submit">
+              {formData.id ? "Update" : "Add"}
             </Button>
-
           </ModalFooter>
         </Form>
       </Modal>
     </div>
   );
 }
-
-
-
-
