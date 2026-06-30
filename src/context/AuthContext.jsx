@@ -8,6 +8,7 @@ export function AuthProvider({ children }) {
 
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  const [catBlog, setCatBlog] = useState(([]))
 
   const login = (userData) => {
     localStorage.setItem("user", JSON.stringify(userData));
@@ -18,6 +19,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
     setUser(null);
   };
+
 
   return (
     <AuthContext.Provider

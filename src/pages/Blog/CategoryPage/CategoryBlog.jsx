@@ -15,6 +15,7 @@ import {
   Row,
   Col,
 } from "reactstrap";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function CategoryBlog() {
   const [search, setSearch] = useState("");
@@ -31,10 +32,21 @@ export default function CategoryBlog() {
 
   //Fetch categories (GET)
   useEffect(() => {
-    fetch("http://localhost:5000/api/category-blog")
-      .then((res) => res.json())
-      .then((data) => setBlogs(data?.data))
-      .catch((err) => console.error(err));
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/category-blog");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+        const result = await response.json();
+        setBlogs(result.data || []);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories()
+
   }, [refresh]);
 
   const toggleModal = () => setModal(!modal);

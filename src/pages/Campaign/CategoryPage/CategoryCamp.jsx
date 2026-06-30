@@ -237,6 +237,31 @@ export default function CategoryCamp() {
           <ModalBody>
 
             <Row>
+
+              <Col md="12" className="mb-4">
+                <div style={{ display: "flex",justifyContent:"center", gap: 10, marginTop: 20 }}>
+                  {/* {images.length > 0 && ( */}
+                    <div style={
+                      { width: "150px", height:"150px",border:"1px dashed gray",  borderRadius:8}}>
+                      {images.map((img) => (
+                        <img
+                          key={img.name}
+                          src={img.preview}
+                          alt={img.name}
+                          width={"100%"}
+                          height={"100%"}
+                          style={{
+                            borderRadius:8,
+                            objectFit: "cover",
+                            width: "100%",
+                            border: "1px solid #ddd",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  {/* )} */}
+                </div>
+              </Col>
               <Col md="6">
                 <FormGroup>
                   <Label>Category Name</Label>
@@ -282,28 +307,7 @@ export default function CategoryCamp() {
                   >
                     <input {...getInputProps()} />
                     <p>Drag & Drop or Click</p>
-                    <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                      {images.length > 0 && (
-                        <div style={
-                          { width: "100%", }}>
-                          {images.map((img) => (
-                            <img
-                              key={img.name}
-                              src={img.preview}
-                              alt={img.name}
-                              width={120}
-                              height={120}
-                              style={{
-                                objectFit: "cover",
-                                borderRadius: 8,
-                                width: "100%",
-                                border: "1px solid #ddd",
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
+
                   </div>
 
                 </FormGroup>

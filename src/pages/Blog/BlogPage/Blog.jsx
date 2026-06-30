@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Edit, Trash2 } from "react-feather";
 import DataTable from "react-data-table-component";
 import { Button, Badge, Input, Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Row, Col } from "reactstrap";
+import { useAuth } from "../../../context/AuthContext";
 
 
 export default function Blog() {
     const [search, setSearch] = useState("");
     const [modal, setModal] = useState(false);
+    const [category, setCategory] = useState([]);
+
     const [formData, setFormData] = useState({
         category: "",
         name: "",
@@ -42,6 +45,34 @@ export default function Blog() {
         },
     ]);
     const toggleModal = () => setModal(!modal);
+
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/api/category-blog");
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch categories");
+                }
+                const result = await response.json();
+                setCategory(
+                    (result.data || []).map((item) => ({
+                        label: item.name,
+                        value: item.slug,
+                    }))
+                )
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        };
+        fetchCategories()
+
+    }, []);
+
+
+    console.log(formData, 'ooooooooo')
+
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
@@ -198,20 +229,15 @@ export default function Blog() {
                                         onChange={handleChange}
                                     >
                                         <option value="">
-                                            Select Category
+                                            Select
                                         </option>
-
-                                        <option value="Technology">
-                                            Technology
-                                        </option>
-
-                                        <option value="Business">
-                                            Business
-                                        </option>
-
-                                        <option value="Lifestyle">
-                                            Lifestyle
-                                        </option>
+                                        {
+                                            category?.map((item) =>
+                                                <option value={item.value}>
+                                                    {item.label}
+                                                </option>
+                                            )
+                                        }
                                     </Input>
                                 </FormGroup>
                             </Col>
