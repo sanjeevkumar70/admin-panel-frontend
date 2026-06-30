@@ -77,3 +77,8 @@ body {
   border: 0 !important;
   background-color: #3ad53a !important;
 }
+
+.btn-black{
+  border: 0 !important;
+  background-color: #000000 !important;
+}

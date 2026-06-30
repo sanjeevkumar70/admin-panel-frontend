@@ -317,7 +317,7 @@ export default function CategoryCamp() {
           </ModalBody>
           <ModalFooter>
             <Button
-              color="secondary"
+             className="btn-black"
               onClick={toggleModal}
             >
               Cancel
